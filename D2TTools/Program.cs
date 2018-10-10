@@ -16,7 +16,8 @@ namespace D2TTools
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Form1 f = new Form1();
+            Application.Run();
         }
     }
 }
