@@ -15,7 +15,7 @@ namespace D2TTools
 {
     public partial class Form1 : Form
     {
-        private IKeyboardMouseEvents m_GlobalHook;
+        //private IKeyboardMouseEvents m_GlobalHook;
 
         public Form1()
         {
@@ -34,7 +34,7 @@ namespace D2TTools
             }
             finally
             {
-                RegisterHotKey(Handle, ID_HOTKEY_CONVERT, (int)KeyModifier.Alt, Keys.V.GetHashCode());
+                RegisterHotKey(Handle, ID_HOTKEY_CONVERT, (int)(KeyModifier.Control | KeyModifier.Shift), Keys.V.GetHashCode());
             }
         }
 
@@ -43,7 +43,7 @@ namespace D2TTools
         {
             IntPtr activeWindow = GetForegroundWindow();
             int a, b;
-            SendMessage(activeWindow, WM_COPY, out a, out b );
+            SendMessage(activeWindow, WM_COPY, out a, out b);
             string s = Clipboard.GetText();
 
             MessageBox.Show(string.Format("Data Clipboard: \t{0}", s ?? ""));
@@ -105,12 +105,17 @@ namespace D2TTools
 
         private void ConvertVietnamse()
         {
-            string s = Clipboard.GetText();
-            label1.Text = s;
-            Clipboard.Clear();
-            Clipboard.SetDataObject(s.ToVietnamese());
-            Thread.Sleep(1000);
-            SendKeys.Send("^(V)");
+            try
+            {
+                string s = Clipboard.GetText();
+                Clipboard.Clear();
+                Clipboard.SetDataObject(s.ToVietnamese());
+                //Thread.Sleep(200);
+                SendKeys.Send("^v");
+            }catch(Exception)
+            {
+
+            }
         }
         #endregion
 
@@ -193,22 +198,29 @@ namespace D2TTools
             }
         }
         //Get the text of a control with its handle
+        //private string GetText(IntPtr handle)
+        //{
+        //    int maxLength = 100;
+        //    IntPtr buffer = Marshal.AllocHGlobal((maxLength + 1) * 2);
+        //    SendMessageW(handle, WM_GETTEXT, maxLength, buffer);
+        //    int selectionStart = -1;
+        //    int selectionEnd = -1;
+        //    SendMessage(handle, EM_GETSEL, out selectionStart, out selectionEnd);
+        //    string w = Marshal.PtrToStringUni(buffer);
+        //    Marshal.FreeHGlobal(buffer);
+        //    if (selectionStart > 0 && selectionEnd > 0)
+        //    {
+        //        w = w.Substring(selectionStart, selectionEnd - selectionStart); //We need to send the length
+        //    }
+        //    return w;
+        //}
+
         private string GetText(IntPtr handle)
         {
-            int maxLength = 100;
-            IntPtr buffer = Marshal.AllocHGlobal((maxLength + 1) * 2);
-            SendMessage(activeWindow, WM_COPY, out a, out b);
-            SendMessageW(handle, WM_GETTEXT, maxLength, buffer);
-            int selectionStart = -1;
-            int selectionEnd = -1;
-            SendMessage(handle, EM_GETSEL, out selectionStart, out selectionEnd);
-            string w = Marshal.PtrToStringUni(buffer);
-            Marshal.FreeHGlobal(buffer);
-            if (selectionStart > 0 && selectionEnd > 0)
-            {
-                w = w.Substring(selectionStart, selectionEnd - selectionStart); //We need to send the length
-            }
-            return w;
+            int wParam;
+            int lParam;
+            SendMessage(handle, WM_COPY, out wParam, out lParam);
+            return Clipboard.GetText();
         }
 
         [DllImport("user32.dll")]
